@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: HUMANRESOURCES
+    database: OLTP
+    schema: HUMANRESOURCES
+    tables:
+    - name: EMPLOYEE

@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: purchasing
+    database: OLTP
+    schema: purchasing
+    tables:
+    - name: shipmethod

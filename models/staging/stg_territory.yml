@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_territory
+   
+    columns:
+      - name: territory_id
+        tests:
+          - unique
+          - not_null
+
+      - name: territory_name
+        tests:
+          - unique
+          - not_null
+
+      - name: country_region_code
+        tests:
+          - not_null
+
+      - name: territory_group
+        tests:
+          - not_null
+
+      - name: sales_ytd
+        tests:
+          - not_null
+
+      - name: sales_last_year
+        tests:
+          - not_null
+
+      - name: cost_ytd
+        tests:
+          - not_null
+
+      - name: cost_last_year
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

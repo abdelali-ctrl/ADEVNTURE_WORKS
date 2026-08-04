@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_creditcard
+   
+    columns:
+      - name: credit_card_id
+        tests:
+          - unique
+          - not_null
+
+      - name: card_type
+        tests:
+          - not_null
+
+      - name: card_number
+        tests:
+          - unique
+          - not_null
+
+      - name: exp_month
+        tests:
+          - not_null
+
+      - name: exp_year
+        tests:
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

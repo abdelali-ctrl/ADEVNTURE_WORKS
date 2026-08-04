@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: person
+    database: OLTP
+    schema: person
+    tables:
+    - name: address
+    - name: BUSINESSENTITYADDRESS
+    - name: COUNTRYREGION
+    - name: person
+    - name: STATEPROVINCE

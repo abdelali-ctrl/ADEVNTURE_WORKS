@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: stg_productcosthistory
+
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+
+      - name: start_date
+        tests:
+          - not_null
+
+      - name: standard_cost
+        tests:
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

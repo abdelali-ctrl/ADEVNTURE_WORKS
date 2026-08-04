@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: production
+    database: OLTP
+    schema: production
+    tables:
+    - name: product
+    - name: productcategory
+    - name: productcosthistory
+    - name: PRODUCTLISTPRICEHISTORY
+    - name: productmodel
+    - name: productsubcategory

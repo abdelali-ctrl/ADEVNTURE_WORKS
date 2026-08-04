@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_reason
+    
+    columns:
+      - name: sales_reason_id
+        tests:
+          - unique
+          - not_null
+
+      - name: sales_reason_name
+        tests:
+          - not_null
+
+      - name: reason_type
+        tests:
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

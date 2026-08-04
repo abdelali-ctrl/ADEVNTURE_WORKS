@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: stg_product
+    
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+
+      - name: product_name
+        tests:
+          - not_null
+
+      - name: product_number
+        tests:
+          - unique
+          - not_null
+
+      - name: safety_stock_level
+        tests:
+          - not_null
+
+      - name: reorder_point
+        tests:
+          - not_null
+
+      - name: standard_cost
+        tests:
+          - not_null
+
+      - name: list_price
+        tests:
+          - not_null
+
+      - name: days_to_manufacture
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

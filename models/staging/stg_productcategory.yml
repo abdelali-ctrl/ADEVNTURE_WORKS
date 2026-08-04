@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: stg_product_category
+   
+    columns:
+      - name: product_category_id
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name
+        tests:
+          - unique
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

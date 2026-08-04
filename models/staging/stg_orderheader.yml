@@ -1,0 +1,82 @@
+version: 2
+
+models:
+  - name: stg_orderheader
+    columns:
+      - name: sales_order_id
+        tests:
+          - unique
+          - not_null
+
+      - name: revision_number
+        tests:
+          - not_null
+
+      - name: order_date
+        tests:
+          - not_null
+
+      - name: due_date
+        tests:
+          - not_null
+
+      - name: ship_date
+       
+
+      - name: status
+        tests:
+          - not_null
+
+      - name: online_order_flag
+        tests:
+          - not_null
+
+      - name: customer_id
+        tests:
+          - not_null
+
+      - name: salesperson_id
+        
+
+      - name: territory_id
+       
+
+      - name: bill_to_address_id
+        tests:
+          - not_null
+
+      - name: ship_to_address_id
+        tests:
+          - not_null
+
+      - name: ship_method_id
+        tests:
+          - not_null
+
+      - name: credit_card_id
+      
+
+      - name: sub_total
+        tests:
+          - not_null
+
+      - name: tax_amt
+        tests:
+          - not_null
+
+      - name: freight
+        tests:
+          - not_null
+
+      - name: total_due
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

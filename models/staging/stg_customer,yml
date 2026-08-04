@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_customer
+    
+    columns:
+      - name: customer_id
+        tests:
+          - unique
+          - not_null
+
+      - name: person_id
+
+
+      - name: store_id
+      
+
+      - name: territory_id
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: stg_currency
+   
+    columns:
+      - name: currency_code
+        tests:
+          - unique
+          - not_null
+
+      - name: currency_name
+        tests:
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

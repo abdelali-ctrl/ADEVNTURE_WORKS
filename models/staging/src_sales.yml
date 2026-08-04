@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: sales
+    database: OLTP
+    schema: SALES
+    tables:
+      - name: CREDITCARD
+      - name: CURRENCY
+      - name: CURRENCYRATE
+      - name: CUSTOMER
+      - name: SALESORDERDETAIL
+      - name: SALESORDERHEADER
+      - name: SALESORDERHEADERSALESREASON
+      - name: SALESPERSON
+      - name: SALESPERSONQUOTAHISTORY
+      - name: SALESREASON
+      - name: SALESTERRITORY
+      - name: SpecialOffer
+      - name: SPECIALOFFERPRODUCT
+      - name: STORE

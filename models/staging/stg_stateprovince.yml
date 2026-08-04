@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_stateprovince
+    columns:
+      - name: state_province_id
+        tests:
+          - unique
+          - not_null
+
+      - name: state_province_code
+        tests:
+          - not_null
+
+      - name: country_region_code
+        tests:
+          - not_null
+
+      - name: is_only_state_province_flag
+        tests:
+          - not_null
+
+      - name: state_province_name
+        tests:
+          - unique
+          - not_null
+
+      - name: territory_id
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

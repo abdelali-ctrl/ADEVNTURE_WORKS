@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_person
+    
+    columns:
+      - name: business_entity_id
+        tests:
+          - unique
+          - not_null
+      - name: first_name
+        tests:
+          - not_null
+      - name: last_name
+        tests:
+          - not_null
