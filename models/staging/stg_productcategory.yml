@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: stg_product_category
+  - name: stg_productcategory
    
     columns:
       - name: product_category_id

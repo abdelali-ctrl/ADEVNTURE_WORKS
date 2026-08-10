@@ -3,14 +3,13 @@ version: 2
 models:
   - name: stg_person
     
+    # NOTE: stg_person reads Sales.SalesPerson (business keys + quota/bonus),
+    # NOT person names. first_name/last_name live in stg_personne. The old tests
+    # here referenced non-existent columns and errored.
     columns:
       - name: business_entity_id
         tests:
           - unique
           - not_null
-      - name: first_name
-        tests:
-          - not_null
-      - name: last_name
-        tests:
-          - not_null
+      - name: territory_id
+      - name: sales_quota

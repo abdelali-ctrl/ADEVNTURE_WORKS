@@ -1,0 +1,21 @@
+version: 2
+
+exposures:
+  - name: executive_dashboard
+    label: "Tableau de bord executif (Power BI / Streamlit)"
+    type: dashboard
+    maturity: medium
+    url: https://example.com/dashboards/adventureworks-executive
+    description: >
+      Tableau de bord ≥ 4 pages (Executif, Client, Produit, Force de vente)
+      alimente par le schema en etoile gold. Chaque KPI doit se reconcilier
+      exactement a l'entrepot.
+    depends_on:
+      - ref('fct_sales_order_line')
+      - ref('fct_sales_order')
+      - ref('mart_customer_clv_rfm')
+      - ref('mart_product_abc_pareto')
+      - ref('mart_seller_quota_attainment')
+    owner:
+      name: Equipe Data
+      email: data@example.com

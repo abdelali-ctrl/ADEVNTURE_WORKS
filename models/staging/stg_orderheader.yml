@@ -23,7 +23,7 @@ models:
       - name: ship_date
        
 
-      - name: status
+      - name: order_status
         tests:
           - not_null
 
@@ -60,11 +60,11 @@ models:
         tests:
           - not_null
 
-      - name: tax_amt
+      - name: tax_amount
         tests:
           - not_null
 
-      - name: freight
+      - name: freight_amount
         tests:
           - not_null
 

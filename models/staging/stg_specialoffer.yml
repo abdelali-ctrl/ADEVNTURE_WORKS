@@ -13,15 +13,15 @@ models:
         tests:
           - not_null
 
-      - name: discount_pct
+      - name: discount_percent
         tests:
           - not_null
 
-      - name: type
+      - name: discount_type
         tests:
           - not_null
 
-      - name: category
+      - name: discount_category
         tests:
           - not_null
 
@@ -33,7 +33,7 @@ models:
         tests:
           - not_null
 
-      - name: min_qty
+      - name: min_quantity
         tests:
           - not_null
 

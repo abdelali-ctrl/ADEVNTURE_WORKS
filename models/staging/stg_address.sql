@@ -17,6 +17,11 @@ cleaned as (
         cast(rowguid as varchar) as row_guid,
         cast(modifieddate as date) as modified_date
     from source
+    -- The bronze ADDRESS table was double-loaded (non-idempotent Week-1 load):
+    -- 39,228 rows for 19,614 distinct address_ids. Dedupe defensively here so
+    -- dim_geography stays 1:1 and the fact does not fan out. The real fix is an
+    -- idempotent bronze load; this keeps silver trustworthy until that lands.
+    qualify row_number() over (partition by addressid order by modifieddate desc) = 1
 )
 
 select * from cleaned

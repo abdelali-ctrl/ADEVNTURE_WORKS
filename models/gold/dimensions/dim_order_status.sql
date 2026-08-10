@@ -34,4 +34,17 @@ order_status_dim as (
     from source_orders
 )
 
-select * from order_status_dim
+select
+    sk_order_status,
+    status_id,
+    status_name,
+    sales_channel
+from order_status_dim
+
+union all
+
+select
+    '-1' as sk_order_status,
+    -1 as status_id,
+    'Unknown' as status_name,
+    'Unknown' as sales_channel

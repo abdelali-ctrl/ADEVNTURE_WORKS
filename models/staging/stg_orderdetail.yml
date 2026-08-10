@@ -15,7 +15,7 @@ models:
 
       - name: carrier_tracking_number
      
-      - name: order_qty
+      - name: order_quantity
         tests:
           - not_null
 

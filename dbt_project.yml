@@ -37,6 +37,10 @@ models:
       +database: oltp
       +schema: silver
 
+    intermediate:
+      +materialized: table
+      +database: oltp
+      +schema: silver
 
     gold:
       +materialized: table

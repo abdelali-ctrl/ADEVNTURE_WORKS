@@ -31,3 +31,23 @@ with date_dimension as (
 
 select * from date_dimension
 where date_actual <= '2030-12-31'
+
+union all
+
+-- Unknown member (§5.4): NULL order/due/ship dates land here, e.g. unshipped orders.
+select
+    -1 as sk_date,
+    null as date_actual,
+    null as year,
+    null as quarter,
+    null as year_quarter,
+    null as month,
+    null as month_name,
+    null as month_name_short,
+    null as year_month,
+    null as week_of_year,
+    null as day_of_month,
+    null as day_of_week,
+    null as day_name,
+    null as day_name_short,
+    null as is_weekend

@@ -12,9 +12,8 @@ models:
         tests:
           - not_null
 
+      # address_line2 is legitimately NULL for most addresses -- no not_null test.
       - name: address_line2
-        tests:
-          - not_null
 
       - name: city
         tests:

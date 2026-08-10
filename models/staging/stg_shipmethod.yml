@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: stg_ship_method
+  - name: stg_shipmethod
     
     columns:
       - name: ship_method_id
