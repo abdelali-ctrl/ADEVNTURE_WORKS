@@ -1,107 +1,89 @@
 # AdventureWorks DWH — Plateforme analytique (Snowflake · dbt · Medallion · Kimball)
 
 Entrepôt de données analytique construit sur la base OLTP **AdventureWorks**.
-Les données brutes sont ingérées dans Snowflake, raffinées via une **architecture
-medallion** (bronze → silver → gold), puis modélisées en **schéma en étoile de
-Kimball** pour répondre aux questions métier (chiffre d'affaires, marge, valeur
-client, performance produit, atteinte des quotas).
+Ingestion des CSV dans Snowflake, raffinage via **architecture medallion**
+(bronze → silver → gold), modélisation en **schéma en étoile de Kimball**, et
+restitution BI. Répond aux questions métier : chiffre d'affaires, marge (au coût
+historique), valeur client (CLV/RFM), performance produit (ABC/Pareto), atteinte
+des quotas.
 
-> État actuel : couches **silver** et **gold** livrées et testées.
-> Dernière exécution : `dbt build` → **PASS=303, ERROR=0, SKIP=0, WARN=0** (45 modèles).
+> **État : projet complet et réconcilié.** Dernier `dbt build` →
+> **PASS=322, ERROR=0, SKIP=0, WARN=0** (45 modèles, snapshots SCD2, 258 tests).
 
 ---
 
-## 1. Architecture
+## 1. Structure du dépôt
+
+Le **projet dbt** est isolé dans `dbt/` ; tout ce qui n'est pas dbt est dans des
+dossiers dédiés.
 
 ```
-  CSV AdventureWorks  ──COPY INTO──►  BRONZE (RAW / OLTP.*)      1:1 avec la source
-                                          │  dbt : stg_*
-                                          ▼
-                                      SILVER (OLTP.SILVER)       typé, nettoyé, conformé
-                                          │  dbt : int_* / dim_* / fct_*
-                                          ▼
-                                      GOLD (OLTP.GOLD)           étoile de Kimball
-                                          ▼
-                                      Power BI / BI
+adventureworks_dwh/            (racine du dépôt git)
+├── dbt/                       ← PROJET DBT (dbt_project.yml, models/, macros/, tests/, snapshots/, seeds/)
+├── ingestion/                 ← Phase 1 : chargement bronze (file formats, COPY INTO, cutoff, métadonnées)
+├── platform/                  ← setup.sql (RBAC least-privilege, warehouse, resource monitor)
+├── dashboard/                 ← streamlit_app.py (repli BI, 4 pages)
+├── docs/                      ← architecture, metrics, runbook, decisions (ADR), source_profile, powerbi_model
+├── .github/workflows/         ← CI (dbt build sur chaque PR)
+├── BACKLOG.md                 ← dette technique / reste à faire
+└── README.md
 ```
 
-**Règle porteuse :** chaque couche ne lit que la couche directement au-dessus. Un
-modèle gold qui lirait le bronze est une PR rejetée.
+### Contenu du projet dbt (`dbt/`)
+
+```
+dbt/
+├── models/
+│   ├── staging/          stg_* : 1 modèle par entité source (+ src_*.yml = sources)
+│   ├── intermediate/     int_product_cost_scd / int_product_price_scd (point-in-time)
+│   └── gold/
+│       ├── dimensions/   dim_* (11 dims, membre inconnu -1 ; product/customer en SCD2)
+│       ├── facts/        fct_* + bridge_* + int_orderheader/detail
+│       └── marts/        mart_customer_clv_rfm, mart_product_abc_pareto, mart_seller_quota_attainment
+├── snapshots/            snap_product, snap_customer, snap_product_pricing (SCD2)
+└── tests/                tests singuliers (réconciliation, règles métier, SCD2)
+```
+
+---
+
+## 2. Architecture (medallion + Kimball)
+
+```
+CSV AdventureWorks ─COPY INTO─► AW_SOURCE ─pipeline─► BRONZE (OLTP.*) ─stg_*─► SILVER ─dim_/fct_─► GOLD ─► BI
+                               (landing brut)        (+ métadonnées)          (typé)     (étoile)
+```
+
+**Règle porteuse :** chaque couche ne lit que la couche directement au-dessus.
 
 | Couche | Schéma Snowflake | Rôle |
 |---|---|---|
-| Bronze | `OLTP.SALES`, `OLTP.PRODUCTION`, `OLTP.PERSON`, … | Copie fidèle de la source, aucune logique métier |
-| Silver | `OLTP.SILVER` | Typage, `snake_case`, déduplication, clés métier résolues, qualité |
-| Gold | `OLTP.GOLD` | Faits + dimensions conformes + bridge (schéma en étoile) |
+| Landing | `AW_SOURCE.*` | copie brute des CSV (VARCHAR) — voir `ingestion/` |
+| Bronze | `OLTP.SALES`, `OLTP.PRODUCTION`, `OLTP.PERSON`, … | + `_loaded_at` / `_source_file` / `_batch_id`, cutoff 2013-12-31 |
+| Silver | `OLTP.SILVER` | `stg_*`, `int_*`, snapshots SCD2 |
+| Gold | `OLTP.GOLD` | `dim_*`, `fct_*`, `bridge_*`, `mart_*` |
 
 ---
 
-## 2. Structure du dépôt
+## 3. Décisions de modélisation clés (voir `docs/decisions.md`)
 
-```
-adventureworks_dwh/
-├── dbt_project.yml            # config projet : staging→silver, intermediate→silver, gold→gold
-├── packages.yml               # dépendances (dbt_utils)
-├── macros/
-│   └── generate_schema_name.sql   # schémas nommés sans préfixe cible
-├── models/
-│   ├── staging/               # stg_* : 1 modèle par entité source (+ src_*.yml = sources)
-│   ├── intermediate/          # logique réutilisable
-│   │   ├── int_product_cost_scd.sql    # coût point-in-time (plages de validité)
-│   │   └── int_product_price_scd.sql   # prix catalogue point-in-time
-│   └── gold/
-│       ├── _gold__models.yml           # descriptions + tests (grain, FK, unicité)
-│       ├── dimensions/                 # dim_* (11 dimensions, membre inconnu -1)
-│       └── facts/                      # fct_* + bridge_* + int_orderheader/detail
-├── tests/                     # tests singuliers (réconciliation, règles métier)
-├── seeds/  snapshots/  analyses/       # (à venir : snapshots SCD2)
-└── target/                    # artefacts compilés (non versionné)
-```
-
-### Modèles gold
-
-**Faits**
-| Modèle | Type | Grain — *une ligne = …* |
-|---|---|---|
-| `fct_sales_order_line` | Transaction | une ligne d'une commande |
-| `fct_sales_order` | Transaction | une commande (en-tête) |
-| `fct_sales_quota` | Transaction | un vendeur × une période de quota |
-| `bridge_order_sales_reason` | Bridge | une commande × un motif de vente |
-
-**Dimensions** — `dim_date` (générée, role-playing), `dim_product`, `dim_customer`,
-`dim_salesperson`, `dim_territory`, `dim_geography` (role-playing bill-to / ship-to),
-`dim_ship_method`, `dim_special_offer`, `dim_sales_reason`, `dim_currency`,
-`dim_order_status` (dimension *junk*). Chaque dimension possède un **membre inconnu `-1`**.
-
----
-
-## 3. Décisions de modélisation clés
-
-- **Coût point-in-time.** La marge utilise le coût en vigueur *à la date de commande*
-  (`int_product_cost_scd`, jointure `order_date between valid_from and valid_to`), pas le
-  coût actuel. Impact mesuré : **+3,18 M$ (≈34 %)** d'écart vs la version naïve.
-- **Fret & taxe.** Répartis au prorata du CA net de la ligne dans `fct_sales_order_line` ;
-  la vérité non répartie est conservée dans `fct_sales_order`.
-- **Membres inconnus.** Toute FK de fait fait un `coalesce(..., -1)` vers une ligne `-1`
-  réelle → aucune ligne de fait perdue en jointure (ex. ~2/3 des commandes sans vendeur).
-- **Bridge des motifs.** `allocation_factor = 1 / nombre de motifs` → le CA par motif se
-  réconcilie au total.
-- **Dimension junk.** `order_status` + `online_order_flag` regroupés dans
-  `dim_order_status`.
-- **Déduplication défensive.** `stg_address` déduplique (`qualify row_number()`) car le
-  bronze `ADDRESS` a été chargé deux fois — en attendant un chargement bronze idempotent.
+- **Coût point-in-time** — marge au coût *à la date de commande*. Impact : **+3,18 M$ (~34 %)** vs coût actuel.
+- **SCD2 de bout en bout** — `dim_product` / `dim_customer` historisées via snapshots ; faits joints en point-in-time.
+- **Membres inconnus `-1`** sur toutes les dimensions → aucune ligne de fait perdue.
+- **Fret/taxe** répartis au prorata (fait ligne) + conservés bruts (fait en-tête).
+- **Bridge M:N** des motifs avec `allocation_factor`.
+- **Multi-devises** — reporting USD, commandes FX marquées (`is_multicurrency_order`).
+- **Junk dim** `order_status` ; dédup défensive `stg_address` (bronze double-chargé).
 
 ---
 
 ## 4. Prérequis
 
-- Un compte **Snowflake** avec la base `OLTP` et les schémas source chargés (bronze).
+- Compte **Snowflake** (base `OLTP` chargée — voir `ingestion/`).
 - **Python 3.10+** et **dbt-snowflake ≥ 1.7** (`pip install dbt-snowflake`).
-- Le package `dbt_utils` (installé via `dbt deps`).
 
 ---
 
-## 5. Configuration de la connexion
+## 5. Connexion
 
 Créer `~/.dbt/profiles.yml` (hors dépôt — **aucun secret dans git**) :
 
@@ -113,15 +95,13 @@ adventureworks_dwh:
       type: snowflake
       account: "<identifiant_compte>"
       user: "<utilisateur>"
-      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"   # mot de passe via variable d'env
-      role: "<role>"            # least-privilege, jamais ACCOUNTADMIN
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "<role>"            # least-privilege (DBT_ROLE), jamais ACCOUNTADMIN
       warehouse: "<warehouse>"  # XSMALL, auto_suspend = 60
       database: OLTP
       schema: gold              # staging/intermediate surchargent vers 'silver'
       threads: 4
 ```
-
-Puis, par session :
 
 ```powershell
 $env:SNOWFLAKE_PASSWORD = "votre-mot-de-passe"   # PowerShell
@@ -131,61 +111,57 @@ $env:SNOWFLAKE_PASSWORD = "votre-mot-de-passe"   # PowerShell
 
 ## 6. Exécution
 
-```bash
-dbt deps            # installe dbt_utils
-dbt debug           # vérifie la connexion  → "All checks passed!"
-dbt build           # construit tous les modèles + lance tous les tests
+### Phase 1 — Ingestion (une fois)
+```sql
+-- dans Snowsight, dans l'ordre :
+platform/setup.sql            -- warehouse, resource monitor, RBAC, bases
+ingestion/01_file_formats.sql
+ingestion/02_stage_and_copy.sql
+ingestion/03_bronze_extract.sql   -- cutoff 2013-12-31 + métadonnées
+ingestion/04_reconcile.sql
 ```
 
-Commandes utiles :
-
+### Phases 2-4 — dbt (**depuis `dbt/`**)
 ```bash
-dbt run  --select staging      # construire une couche
-dbt test --select gold         # tester une couche
-dbt build --full-refresh       # reconstruction complète (tables)
-dbt docs generate && dbt docs serve   # documentation navigable
+cd dbt
+dbt deps
+dbt debug            # "All checks passed!"
+dbt snapshot         # historisation SCD2 (avant les modèles)
+dbt build            # staging → gold → marts + tous les tests
+dbt source freshness
+dbt docs generate && dbt docs serve
 ```
+
+Reconstruction complète : `dbt build --full-refresh`.
+Delta 2014 (incrémental) : voir `docs/runbook.md`.
 
 ---
 
 ## 7. Tests
 
-- **Tests génériques** (dans les `*.yml`) : `unique`, `not_null`, `relationships` (FK),
-  unicité de grain sur chaque fait.
-- **Tests singuliers** (dans `tests/`) :
-  - `assert_revenue_reconciles_to_source` — CA du fait = CA source, au centime.
-  - `assert_line_net_sums_to_header_subtotal` — Σ(net ligne) = SubTotal en-tête.
-  - `assert_no_fact_rows_lost` — aucune ligne perdue en jointure.
-  - `assert_allocated_freight_sums_to_header` — le fret réparti resomme à l'en-tête.
-  - `assert_margin_differs_from_naive_cost` — le coût point-in-time change bien la marge.
+- **Génériques** : `unique`, `not_null`, `relationships` (FK), unicité de grain sur chaque fait.
+- **Singuliers** (`dbt/tests/`) : réconciliation CA↔source, net ligne↔en-tête, fret réparti,
+  aucune ligne perdue, marge ≠ coût naïf, **SCD2** (une ligne courante, pas de chevauchement).
 
 ---
 
-## 8. Questions métier couvertes (§2.1 du cahier)
+## 8. Questions métier couvertes (§2.1)
 
-1. **CA & marge** par produit / catégorie / territoire / canal / mois (marge point-in-time).
-2. **Valeur client** — consommateurs individuels vs revendeurs (base pour CLV / RFM).
-3. **Performance produit** — base pour ABC/Pareto, érosion des remises.
-4. **Force de vente** — CA vs quota par vendeur et trimestre (`fct_sales_quota`).
+CA & marge (point-in-time) · valeur client CLV/RFM · performance produit ABC/Pareto ·
+force de vente vs quota. Dashboard : `dashboard/streamlit_app.py` + modèle Power BI
+documenté (`docs/powerbi_model.md`).
 
 ---
 
-## 9. Reste à faire (feuille de route)
+## 9. Reste à faire
 
-- [ ] **Snapshots SCD2** sur produit / client / prix (`dbt snapshot`).
-- [ ] **Chargement bronze idempotent** (cause racine du double-chargement `ADDRESS`).
-- [ ] **Multi-devises** : porter `sk_currency` sur les faits, déclarer la devise de reporting.
-- [ ] Chargement **incrémental** des faits (watermark `ModifiedDate`) + delta 2014.
-- [ ] **Marts** métier : CLV+RFM, produit ABC/Pareto, atteinte des quotas.
-- [ ] **Tableau de bord Power BI** (≥ 4 pages) et modèle sémantique.
-- [ ] `/docs` : `architecture.md`, `metrics.md`, `runbook.md`, `decisions.md` (ADR).
-- [ ] Renommer les modèles mal orthographiés ; relocaliser les `int_*` en `intermediate/`.
+Voir `BACKLOG.md`. Points ouverts : chargement bronze idempotent depuis les CSV réels,
+chargement de `CurrencyRate` (conversion FX), SCD2 salesperson, `.pbix` Power BI natif.
 
 ---
 
 ## 10. Conventions
 
-`bronze` → `stg_` → `int_` → `dim_`/`fct_`/`bridge_` → `mart_` ·
-clés : `sk_` (substitution), `nk_` (naturelle), membre inconnu = `-1` ·
-`snake_case` à partir de silver · SQL : CTE, colonnes explicites, mots-clés en minuscule ·
-secrets par variables d'environnement uniquement.
+`bronze` → `stg_` → `int_` → `dim_`/`fct_`/`bridge_` → `mart_` · clés : `sk_`
+(substitution), `nk_` (naturelle), inconnu = `-1` · `snake_case` dès silver ·
+SQL en CTE, colonnes explicites · secrets par variables d'environnement uniquement.

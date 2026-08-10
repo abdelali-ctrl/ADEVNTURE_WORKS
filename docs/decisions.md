@@ -65,6 +65,15 @@ des montants en devise d'origine attend le chargement de `CurrencyRate` (BACKLOG
 **Consequence.** Agregations correctes en USD ; les commandes multi-devises sont
 identifiables sans fabriquer de taux de change.
 
+## ADR-0011 — Exclusion des colonnes hostiles à l'ingestion
+**Contexte.** `Person`/`Store` portent des colonnes XML (newlines/tabs embarqués)
+et `Employee` un `hierarchyid` binaire — ingérables mais inutiles au star schema.
+**Decision.** Les **exclure** à l'ingestion (option (a) du guide §3). Cela plie la
+règle "bronze 1:1 avec la source", d'où cette trace.
+**Alternative.** Charger en texte brut et ne jamais y toucher — conserve la règle
+mais alourdit le bronze sans usage.
+**Consequence.** Bronze plus propre ; l'écart au 1:1 est documenté et volontaire.
+
 ## ADR-0010 — SCD2 de bout en bout via snapshots
 **Contexte.** Les dimensions produit/client doivent etre historisees (Type 2).
 **Decision.** `dbt snapshot` (strategie `check`) alimente `snap_product`/`snap_customer` ;

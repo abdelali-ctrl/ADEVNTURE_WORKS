@@ -14,6 +14,9 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dbt   # le projet dbt vit dans dbt/
     env:
       DBT_PROFILES_DIR: ./ci
       SNOWFLAKE_ACCOUNT:   ${{ secrets.SNOWFLAKE_ACCOUNT }}
