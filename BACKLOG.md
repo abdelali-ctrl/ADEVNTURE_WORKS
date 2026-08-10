@@ -33,6 +33,12 @@ courante). Cf. cahier §7 : le scope gele le lundi, les idees vont ici.
 - [ ] Tests SCD2 une fois les dims rebranchees : une seule ligne courante par cle,
       pas de trou/chevauchement (`assert_scd2_*` en reference chez le superviseur).
 
+## Securite / CI (fait)
+
+- [x] ~~CI par **paire de cles RSA**~~ (pas de mot de passe) + **schemas isoles `*_ci`**
+      via `generate_schema_name` (cible `ci`). Utilisateur/role dedie least-privilege
+      (`platform/ci_user.sql`). Secrets dans GitHub Secrets.
+
 ## Priorite basse (finitions)
 
 - [ ] `dim_customer` : nom d'affichage/attributs enrichis par type.
