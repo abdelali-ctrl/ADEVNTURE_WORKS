@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_shipmethod
+    
+    columns:
+      - name: ship_method_id
+        tests:
+          - unique
+          - not_null
+
+      - name: ship_method_name
+        tests:
+          - unique
+          - not_null
+
+      - name: ship_base
+        tests:
+          - not_null
+
+      - name: ship_rate
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

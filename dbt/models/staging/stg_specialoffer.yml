@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: stg_specialoffer
+  
+    columns:
+      - name: special_offer_id
+        tests:
+          - unique
+          - not_null
+
+      - name: description
+        tests:
+          - not_null
+
+      - name: discount_percent
+        tests:
+          - not_null
+
+      - name: discount_type
+        tests:
+          - not_null
+
+      - name: discount_category
+        tests:
+          - not_null
+
+      - name: start_date
+        tests:
+          - not_null
+
+      - name: end_date
+        tests:
+          - not_null
+
+      - name: min_quantity
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null

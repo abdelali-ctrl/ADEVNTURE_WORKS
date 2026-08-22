@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: sales
+    database: OLTP
+    schema: SALES
+    # Fraicheur des sources (cahier DoD Semaine 2). Sur ce jeu d'exemple statique
+    # (2011-2014), `dbt source freshness` signalera "stale" -- c'est attendu ; en
+    # production, les seuils alertent si le chargement bronze prend du retard.
+    loaded_at_field: MODIFIEDDATE
+    freshness:
+      warn_after: {count: 30, period: day}
+      error_after: {count: 90, period: day}
+    tables:
+      - name: CREDITCARD
+      - name: CURRENCY
+      - name: CURRENCYRATE
+      - name: CUSTOMER
+      - name: SALESORDERDETAIL
+      - name: SALESORDERHEADER
+      - name: SALESORDERHEADERSALESREASON
+      - name: SALESPERSON
+      - name: SALESPERSONQUOTAHISTORY
+      - name: SALESREASON
+      - name: SALESTERRITORY
+      - name: SpecialOffer
+      - name: SPECIALOFFERPRODUCT
+      - name: STORE

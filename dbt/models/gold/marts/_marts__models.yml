@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: mart_customer_clv_rfm
+    description: "Mart client : segmentation RFM (Recence/Frequence/Montant) et proxy CLV (marge cumulee). Grain : un client."
+    columns:
+      - name: sk_customer
+        tests: [unique, not_null]
+      - name: rfm_segment
+        tests:
+          - accepted_values:
+              values: ['Champions','Loyaux','Nouveaux','A risque','A reconquerir','Dormants']
+      - name: frequency_orders
+        tests: [not_null]
+
+  - name: mart_product_abc_pareto
+    description: "Mart produit : classification ABC/Pareto par CA, marge et rang. Grain : un produit."
+    columns:
+      - name: sk_product
+        tests: [unique, not_null]
+      - name: abc_class
+        tests:
+          - accepted_values:
+              values: ['A','B','C']
+      - name: revenue
+        tests: [not_null]
+
+  - name: mart_seller_quota_attainment
+    description: "Mart force de vente : realise vs quota par vendeur et trimestre. Grain : vendeur x trimestre."
+    columns:
+      - name: attainment_status
+        tests:
+          - accepted_values:
+              values: ['Atteint','Non atteint','Sans quota']

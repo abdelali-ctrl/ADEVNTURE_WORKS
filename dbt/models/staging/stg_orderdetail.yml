@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: stg_orderdetail
+   
+    columns:
+      - name: sales_order_id
+        tests:
+          - not_null
+
+      - name: sales_order_detail_id
+        tests:
+          - unique
+          - not_null
+
+      - name: carrier_tracking_number
+     
+      - name: order_quantity
+        tests:
+          - not_null
+
+      - name: product_id
+        tests:
+          - not_null
+
+      - name: special_offer_id
+        tests:
+          - not_null
+
+      - name: unit_price
+        tests:
+          - not_null
+
+      - name: unit_price_discount
+        tests:
+          - not_null
+
+      - name: row_guid
+        tests:
+          - unique
+          - not_null
+
+      - name: modified_date
+        tests:
+          - not_null
