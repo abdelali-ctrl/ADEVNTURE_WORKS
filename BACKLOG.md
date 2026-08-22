@@ -30,14 +30,8 @@ courante). Cf. cahier §7 : le scope gele le lundi, les idees vont ici.
       (supprime les 12 avertissements de depreciation dbt 1.12).
 - [ ] `docs/incremental_benchmark.md` : full-refresh vs incremental (temps + credits
       reels depuis `query_history`).
-- [ ] Tests SCD2 une fois les dims rebranchees : une seule ligne courante par cle,
-      pas de trou/chevauchement (`assert_scd2_*` en reference chez le superviseur).
-
-## Securite / CI (fait)
-
-- [x] ~~CI par **paire de cles RSA**~~ (pas de mot de passe) + **schemas isoles `*_ci`**
-      via `generate_schema_name` (cible `ci`). Utilisateur/role dedie least-privilege
-      (`platform/ci_user.sql`). Secrets dans GitHub Secrets.
+- [x] ~~Tests SCD2 : une seule ligne courante par cle, pas de chevauchement~~ — FAIT
+      (`assert_scd2_one_current_row`, `assert_scd2_no_overlapping_ranges`).
 
 ## Priorite basse (finitions)
 

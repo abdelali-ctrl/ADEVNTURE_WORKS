@@ -24,7 +24,6 @@ adventureworks_dwh/            (racine du dépôt git)
 ├── platform/                  ← setup.sql (RBAC least-privilege, warehouse, resource monitor)
 ├── dashboard/                 ← streamlit_app.py (repli BI, 4 pages)
 ├── docs/                      ← architecture, metrics, runbook, decisions (ADR), source_profile, powerbi_model
-├── .github/workflows/         ← CI (dbt build sur chaque PR)
 ├── BACKLOG.md                 ← dette technique / reste à faire
 └── README.md
 ```
